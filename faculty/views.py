@@ -1,8 +1,11 @@
+from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
 from .models import Faculty, Subject
+
+User = get_user_model()
 from .serializers import FacultySerializer, SubjectSerializer
 
 from rest_framework.permissions import IsAuthenticated
@@ -94,6 +97,9 @@ class FacultyDetailView(APIView):
 
         if not faculty:
             return Response({"error": "Not found"}, status=404)
+
+        # 🧹 Also remove linked login account
+        User.objects.filter(email=faculty.email, role='faculty').delete()
 
         faculty.delete()
         return Response({"message": "Deleted successfully"})
